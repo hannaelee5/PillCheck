@@ -115,7 +115,7 @@ body{background:var(--bg);font-family:'Noto Sans KR',sans-serif;color:var(--text
 .qchip:hover{border-color:var(--green);color:var(--green)}
 
 /* HOME HEADER */
-.home-top{padding:48px 18px 0;background:linear-gradient(180deg,var(--green-pale) 0%,#fff 100%)}
+.home-top{padding:48px 18px 0;background:linear-gradient(180deg,var(--green-pale) 0%,#fff 100%)}.cal-sticky{position:sticky;top:0;z-index:50;background:#fff}
 .home-brand-row{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px}
 .home-brand{font-size:11px;color:var(--flower);font-weight:700;letter-spacing:1px}
 
@@ -470,13 +470,15 @@ body{background:var(--bg);font-family:'Noto Sans KR',sans-serif;color:var(--text
   <div class="ob-body">
     <div class="prog" id="prog">
       <div class="prog-d active"></div><div class="prog-d"></div>
-      <div class="prog-d"></div><div class="prog-d"></div><div class="prog-d"></div>
+      <div class="prog-d"></div><div class="prog-d"></div><div class="prog-d"></div><div class="prog-d"></div>
     </div>
+    <!-- STEP 1: 기본 정보 -->
     <div class="ob-step active" id="os1">
       <div class="ob-title">안녕하세요! 👋</div>
-      <div class="ob-sub">맞춤 분석을 위해 기본 정보를 알려주세요</div>
+      <div class="ob-sub">맞춤 건강 분석을 위해 기본 정보를 알려주세요</div>
       <input class="field" id="ob-name" placeholder="이름 또는 닉네임 (예: 한내)" />
       <input class="field" id="ob-birth" placeholder="출생연도 (예: 1993)" type="number" />
+      <div style="font-size:13px;font-weight:600;margin-bottom:8px">성별</div>
       <div class="g-row">
         <div class="g-btn" onclick="selGender(this,'여성')"><span class="g-icon">👩</span><span class="g-lbl">여성</span></div>
         <div class="g-btn" onclick="selGender(this,'남성')"><span class="g-icon">👨</span><span class="g-lbl">남성</span></div>
@@ -485,7 +487,8 @@ body{background:var(--bg);font-family:'Noto Sans KR',sans-serif;color:var(--text
         <input class="field" style="margin:0" id="ob-h" placeholder="키 (cm)" type="number"/>
         <input class="field" style="margin:0" id="ob-w" placeholder="체중 (kg)" type="number"/>
       </div>
-      <div style="margin-top:10px;margin-bottom:10px">
+      <!-- 임신/수유: 여성만 표시 -->
+      <div id="preg-section" style="display:none;margin-top:10px;margin-bottom:10px">
         <div style="font-size:13px;font-weight:600;margin-bottom:8px">임신/수유</div>
         <div class="tag-wrap" id="preg-tags">
           <div class="tag" onclick="toggleTag(this)">임신 중</div>
@@ -494,40 +497,89 @@ body{background:var(--bg);font-family:'Noto Sans KR',sans-serif;color:var(--text
           <div class="tag" onclick="toggleTag(this)">해당 없음</div>
         </div>
       </div>
+      <!-- 목표 체중 & 식단 -->
+      <div style="margin-top:10px;margin-bottom:10px">
+        <div style="font-size:13px;font-weight:600;margin-bottom:8px">목표 체중 & 식단</div>
+        <div class="g-row">
+          <input class="field" style="margin:0" id="ob-goal-w" placeholder="목표 체중 (kg)" type="number"/>
+          <input class="field" style="margin:0" id="ob-goal-kcal" placeholder="목표 칼로리 (kcal)" type="number"/>
+        </div>
+      </div>
       <button class="btn btn-green" onclick="goStep(2)">다음 →</button>
     </div>
+
+    <!-- STEP 2: 건강 상태 -->
     <div class="ob-step" id="os2">
       <div class="ob-title">건강 상태 🏥</div>
       <div class="ob-sub">더 정확한 분석을 위해 알려주세요</div>
+
       <div style="font-size:13px;font-weight:600;margin-bottom:8px">알레르기</div>
       <div class="tag-wrap" id="allergy-tags">
-        <div class="tag" onclick="toggleTag(this)">갑각류</div><div class="tag" onclick="toggleTag(this)">생선</div>
-        <div class="tag" onclick="toggleTag(this)">대두</div><div class="tag" onclick="toggleTag(this)">우유</div>
-        <div class="tag" onclick="toggleTag(this)">밀</div><div class="tag" onclick="toggleTag(this)">없음</div>
+        <div class="tag" onclick="toggleTag(this)">갑각류</div>
+        <div class="tag" onclick="toggleTag(this)">생선</div>
+        <div class="tag" onclick="toggleTag(this)">대두</div>
+        <div class="tag" onclick="toggleTag(this)">우유</div>
+        <div class="tag" onclick="toggleTag(this)">밀</div>
+        <div class="tag" onclick="toggleTag(this)">없음</div>
+        <div class="tag" onclick="toggleTag(this)">기타</div>
       </div>
-      <input class="field" id="ob-meds" placeholder="복용 중인 처방약 (없으면 공백)" />
+      <input class="field" id="ob-allergy-etc" placeholder="기타 알레르기 직접 입력..." style="display:none"/>
+
+      <div style="font-size:13px;font-weight:600;margin-bottom:8px;margin-top:4px">복용 중인 처방약</div>
+      <input class="field" id="ob-meds" placeholder="예: 디에노게스트, 갑상선약... (없으면 공백)" />
+
       <div style="font-size:13px;font-weight:600;margin-bottom:8px">건강 상태/질환</div>
+      <!-- 여성 질환 -->
+      <div id="cond-female" style="display:none">
+        <div style="font-size:11px;color:var(--muted);margin-bottom:6px">여성 건강</div>
+        <div class="tag-wrap">
+          <div class="tag" onclick="toggleTag(this)">🌸 자궁내막증</div>
+          <div class="tag" onclick="toggleTag(this)">💜 PCOS</div>
+          <div class="tag" onclick="toggleTag(this)">🤰 난임</div>
+          <div class="tag" onclick="toggleTag(this)">🌙 생리불순</div>
+          <div class="tag" onclick="toggleTag(this)">🥚 조기폐경</div>
+        </div>
+      </div>
+      <!-- 공통 질환 -->
+      <div style="font-size:11px;color:var(--muted);margin-bottom:6px;margin-top:8px">공통</div>
       <div class="tag-wrap" id="cond-tags">
-        <div class="tag" onclick="toggleTag(this)">🌸 자궁내막증</div><div class="tag" onclick="toggleTag(this)">💜 PCOS</div>
-        <div class="tag" onclick="toggleTag(this)">🦋 갑상선</div><div class="tag" onclick="toggleTag(this)">🩸 빈혈</div>
+        <div class="tag" onclick="toggleTag(this)">🦋 갑상선</div>
+        <div class="tag" onclick="toggleTag(this)">🩸 빈혈</div>
+        <div class="tag" onclick="toggleTag(this)">🫀 고혈압</div>
+        <div class="tag" onclick="toggleTag(this)">🍬 당뇨</div>
+        <div class="tag" onclick="toggleTag(this)">🦴 골다공증</div>
         <div class="tag" onclick="toggleTag(this)">없음</div>
       </div>
-      <button class="btn btn-green" onclick="goStep(3)">다음 →</button>
+      <button class="btn btn-green" onclick="goStep(3)" style="margin-top:8px">다음 →</button>
     </div>
+
+    <!-- STEP 3: 관심사 (최대 5개) -->
     <div class="ob-step" id="os3">
       <div class="ob-title">건강 관심사 ✨</div>
-      <div class="ob-sub">해당하는 것을 모두 선택해주세요</div>
+      <div class="ob-sub">최대 5개까지 선택 가능해요</div>
+      <div style="font-size:12px;font-weight:700;color:var(--green);margin-bottom:10px" id="interest-count-lbl">0 / 5 선택됨</div>
       <div class="tag-wrap" id="interest-tags">
-        <div class="tag" onclick="toggleTag(this)">⚖️ 체중 관리</div><div class="tag" onclick="toggleTag(this)">💪 근육 증가</div>
-        <div class="tag" onclick="toggleTag(this)">✨ 피부·미용</div><div class="tag" onclick="toggleTag(this)">😴 수면 개선</div>
-        <div class="tag" onclick="toggleTag(this)">⚡ 피로 회복</div><div class="tag" onclick="toggleTag(this)">🌸 여성 건강</div>
-        <div class="tag" onclick="toggleTag(this)">🛡️ 면역력</div><div class="tag" onclick="toggleTag(this)">🦴 뼈·관절</div>
+        <div class="tag" onclick="toggleInterest(this)">⚖️ 체중 관리</div>
+        <div class="tag" onclick="toggleInterest(this)">💪 근육 증가</div>
+        <div class="tag" onclick="toggleInterest(this)">✨ 피부·미용</div>
+        <div class="tag" onclick="toggleInterest(this)">😴 수면 개선</div>
+        <div class="tag" onclick="toggleInterest(this)">⚡ 피로 회복</div>
+        <div class="tag" onclick="toggleInterest(this)">🌸 여성 건강</div>
+        <div class="tag" onclick="toggleInterest(this)">🛡️ 면역력</div>
+        <div class="tag" onclick="toggleInterest(this)">🦴 뼈·관절</div>
+        <div class="tag" onclick="toggleInterest(this)">🧠 집중력</div>
+        <div class="tag" onclick="toggleInterest(this)">🫀 심혈관</div>
+        <div class="tag" onclick="toggleInterest(this)">🌿 항산화</div>
+        <div class="tag" onclick="toggleInterest(this)">기타</div>
       </div>
-      <button class="btn btn-green" onclick="goStep(4)">다음 →</button>
+      <input class="field" id="ob-interest-etc" placeholder="기타 관심사 직접 입력..." style="display:none;margin-top:4px"/>
+      <button class="btn btn-green" onclick="goStep(4)" style="margin-top:8px">다음 →</button>
     </div>
+
+    <!-- STEP 4: 영양제 -->
     <div class="ob-step" id="os4">
       <div class="ob-title">지금 드시는 영양제 💊</div>
-      <div class="ob-sub">검색해서 추가해주세요</div>
+      <div class="ob-sub">검색해서 추가해주세요. 없으면 건너뛰어도 돼요!</div>
       <div id="ob-pill-list" style="margin-bottom:8px"></div>
       <div class="swrap">
         <span class="sico">🔍</span>
@@ -544,15 +596,58 @@ body{background:var(--bg);font-family:'Noto Sans KR',sans-serif;color:var(--text
       <button class="btn btn-green" onclick="goStep(5)" style="margin-top:16px">분석 시작 →</button>
       <button class="btn btn-outline" onclick="goStep(5)" style="margin-top:8px">건너뛰기</button>
     </div>
-    <div class="ob-step" id="os5" style="text-align:center;padding-top:48px">
-      <div style="font-size:60px;margin-bottom:16px">🌱</div>
-      <div style="font-size:20px;font-weight:700;margin-bottom:8px">새싹이 자라고 있어요!</div>
-      <div style="font-size:14px;color:var(--muted);margin-bottom:32px;line-height:1.6">입력하신 정보를 바탕으로<br>맞춤 건강 분석을 준비하고 있어요</div>
-      <div style="display:flex;justify-content:center;gap:8px">
-        <div style="width:10px;height:10px;border-radius:50%;background:var(--green);animation:bounce 1.2s infinite"></div>
-        <div style="width:10px;height:10px;border-radius:50%;background:var(--green);animation:bounce 1.2s infinite .2s"></div>
-        <div style="width:10px;height:10px;border-radius:50%;background:var(--green);animation:bounce 1.2s infinite .4s"></div>
+
+    <!-- STEP 5: 알람 설정 -->
+    <div class="ob-step" id="os5">
+      <div class="ob-title">알림 설정 🔔</div>
+      <div class="ob-sub">영양제 복용 시간을 설정해요</div>
+      <div style="font-size:13px;font-weight:600;margin-bottom:8px">🌅 아침 복용 알림</div>
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:16px">
+        <input class="field" style="margin:0;flex:1" type="time" id="ob-alarm-am" value="08:00"/>
+        <div class="set-toggle on" id="alarm-am-toggle" onclick="this.classList.toggle('on')"></div>
       </div>
+      <div style="font-size:13px;font-weight:600;margin-bottom:8px">🌙 저녁 복용 알림</div>
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:24px">
+        <input class="field" style="margin:0;flex:1" type="time" id="ob-alarm-pm" value="22:00"/>
+        <div class="set-toggle on" id="alarm-pm-toggle" onclick="this.classList.toggle('on')"></div>
+      </div>
+      <button class="btn btn-green" onclick="goStep(6)">다음 →</button>
+      <button class="btn btn-outline" onclick="goStep(6)" style="margin-top:8px">나중에 설정하기</button>
+    </div>
+
+    <!-- STEP 6: 분석 결과 -->
+    <div class="ob-step" id="os6" style="text-align:center;padding-top:32px">
+      <div style="font-size:56px;margin-bottom:16px">🌱</div>
+      <div style="font-size:22px;font-weight:700;margin-bottom:6px">분석 완료!</div>
+      <div style="font-size:14px;color:var(--muted);margin-bottom:28px;line-height:1.6">입력하신 정보를 바탕으로<br>맞춤 건강 분석을 완료했어요</div>
+
+      <!-- 점수 결과 -->
+      <div style="background:#fff;border:1.5px solid var(--border);border-radius:20px;padding:24px;margin-bottom:16px;text-align:center">
+        <div style="font-size:13px;color:var(--muted);margin-bottom:12px">내 영양제 점수</div>
+        <div style="position:relative;width:120px;height:120px;margin:0 auto 12px">
+          <svg width="120" height="120" viewBox="0 0 120 120" style="transform:rotate(-90deg)">
+            <circle fill="none" stroke="#E8EDE6" stroke-width="12" cx="60" cy="60" r="50"/>
+            <circle fill="none" stroke="#3D8B5E" stroke-width="12" stroke-linecap="round" cx="60" cy="60" r="50" stroke-dasharray="314" stroke-dashoffset="88" id="result-donut"/>
+          </svg>
+          <div style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);text-align:center">
+            <div style="font-size:32px;font-weight:700;color:#1A2416" id="result-score">72</div>
+            <div style="font-size:11px;color:#90A884">점</div>
+          </div>
+        </div>
+        <div style="font-size:13px;color:#556B4A;margin-bottom:8px">상위 <strong>35%</strong>의 점수예요</div>
+        <div style="display:flex;gap:8px;justify-content:center;flex-wrap:wrap">
+          <span style="font-size:11px;padding:4px 10px;border-radius:10px;background:#FFF0F0;color:#E05252;font-weight:700">부족 2개</span>
+          <span style="font-size:11px;padding:4px 10px;border-radius:10px;background:#FFF8EC;color:#F5A623;font-weight:700">주의 1개</span>
+          <span style="font-size:11px;padding:4px 10px;border-radius:10px;background:#EAF4EE;color:#3D8B5E;font-weight:700">최적 3개</span>
+        </div>
+      </div>
+
+      <div style="display:flex;justify-content:center;gap:8px;margin-bottom:28px">
+        <div style="width:8px;height:8px;border-radius:50%;background:var(--green);animation:bounce 1.2s infinite"></div>
+        <div style="width:8px;height:8px;border-radius:50%;background:var(--green);animation:bounce 1.2s infinite .2s"></div>
+        <div style="width:8px;height:8px;border-radius:50%;background:var(--green);animation:bounce 1.2s infinite .4s"></div>
+      </div>
+      <button class="btn btn-green" onclick="finishOnboard()" style="font-size:16px">시작하기 🌱</button>
     </div>
     <style>@keyframes bounce{0%,80%,100%{transform:scale(.6);opacity:.4}40%{transform:scale(1);opacity:1}}</style>
   </div>
@@ -574,7 +669,7 @@ body{background:var(--bg);font-family:'Noto Sans KR',sans-serif;color:var(--text
     </div>
   </div>
   <!-- CALENDAR -->
-  <div class="cal-wrap">
+  <div class="cal-wrap cal-sticky">
     <div class="cal-header" onclick="toggleCal()">
       <div class="cal-month"><span id="cal-month-lbl">2026년 5월</span><span class="cal-arrow" id="cal-arrow">▼</span></div>
       <div class="cal-streak" id="cal-streak-lbl">🔥 14일 연속</div>
@@ -758,8 +853,8 @@ body{background:var(--bg);font-family:'Noto Sans KR',sans-serif;color:var(--text
       <div style="margin-top:10px"><div class="gc-prog-bar"><div class="gc-prog-fill" style="width:60%"></div></div><div class="gc-prog-text">꽃까지 4개 챌린지 남았어요 (6/10)</div></div>
     </div>
     <div class="slabel">진행 중인 챌린지</div>
-    <div class="chal-card"><div class="chal-top"><div class="chal-icon">💊</div><div><div class="chal-name">14일 영양제 연속 복용</div><div class="chal-desc">매일 영양제를 챙겨 드시면 달성!</div></div></div><div class="chal-prog-bar"><div class="chal-prog-fill" style="width:100%"></div></div><div class="chal-prog-text"><span>14 / 14일</span><span class="chal-prog-pct">✓ 완료!</span></div><div class="chal-reward">🎁 +100P 획득!</div></div>
-    <div class="chal-card"><div class="chal-top"><div class="chal-icon">⚖️</div><div><div class="chal-name">30일 체중 기록</div><div class="chal-desc">매일 체중을 기록하면 달성!</div></div></div><div class="chal-prog-bar"><div class="chal-prog-fill" style="width:47%"></div></div><div class="chal-prog-text"><span>14 / 30일</span><span class="chal-prog-pct">47%</span></div><div class="chal-reward">🎁 달성시 +150P</div></div>
+    <div class="chal-card" onclick="openDetail('chal-detail')" style="cursor:pointer"><div class="chal-top"><div class="chal-icon">💊</div><div style="flex:1"><div class="chal-name">14일 영양제 연속 복용</div><div class="chal-desc">매일 영양제를 챙겨 드시면 달성!</div></div><div style="font-size:13px;color:var(--muted)">›</div></div><div class="chal-prog-bar"><div class="chal-prog-fill" style="width:100%"></div></div><div class="chal-prog-text"><span>14 / 14일</span><span class="chal-prog-pct">✓ 완료!</span></div><div class="chal-reward">🎁 +100P 획득!</div></div>
+    <div class="chal-card" onclick="openDetail('chal-detail')" style="cursor:pointer"><div class="chal-top"><div class="chal-icon">⚖️</div><div style="flex:1"><div class="chal-name">30일 체중 기록</div><div class="chal-desc">매일 체중을 기록하면 달성!</div></div><div style="font-size:13px;color:var(--muted)">›</div></div><div class="chal-prog-bar"><div class="chal-prog-fill" style="width:47%"></div></div><div class="chal-prog-text"><span>14 / 30일</span><span class="chal-prog-pct">47%</span></div><div class="chal-reward">🎁 달성시 +150P</div></div>
     <div class="slabel">새 챌린지 도전하기</div>
     <div class="chal-card" style="border-style:dashed"><div class="chal-top"><div class="chal-icon">🌙</div><div><div class="chal-name">21일 수면 기록</div><div class="chal-desc">매일 수면 시간을 기록하면 달성!</div></div></div><button class="btn btn-green" style="padding:10px;margin-top:8px">시작하기</button></div>
   </div>
@@ -941,32 +1036,23 @@ body{background:var(--bg);font-family:'Noto Sans KR',sans-serif;color:var(--text
       </div>
     </div>
 
-    <!-- 계정 & 기타 -->
-    <div class="slabel">⚙️ 계정 & 기타</div>
+    <!-- 설정 버튼 하나로 묶기 -->
+    <div class="slabel">⚙️ 설정</div>
     <div class="set-section">
-      <div class="set-menu-item">
-        <div class="set-menu-icon" style="background:var(--bg)">🔒</div>
-        <div class="set-menu-info"><div class="set-menu-label">개인정보 및 보안</div></div>
+      <div class="set-menu-item" onclick="openDetail('acct-detail')">
+        <div class="set-menu-icon" style="background:var(--bg)">⚙️</div>
+        <div class="set-menu-info">
+          <div class="set-menu-label">계정 & 앱 설정</div>
+          <div class="set-menu-sub">개인정보 · 공지사항 · 버전 정보</div>
+        </div>
         <div class="set-menu-arrow">›</div>
       </div>
-      <div class="set-menu-item">
-        <div class="set-menu-icon" style="background:var(--bg)">📢</div>
-        <div class="set-menu-info"><div class="set-menu-label">공지사항</div></div>
-        <div class="set-menu-arrow">›</div>
-      </div>
-      <div class="set-menu-item">
-        <div class="set-menu-icon" style="background:var(--bg)">💌</div>
-        <div class="set-menu-info"><div class="set-menu-label">의견 보내기</div><div class="set-menu-sub">앱 개선 아이디어를 알려주세요</div></div>
-        <div class="set-menu-arrow">›</div>
-      </div>
-      <div class="set-menu-item">
-        <div class="set-menu-icon" style="background:var(--bg)">ℹ️</div>
-        <div class="set-menu-info"><div class="set-menu-label">앱 버전</div></div>
-        <div class="set-menu-right"><div class="set-menu-val">v1.0.0</div></div>
+      <div class="set-menu-item" onclick="alert('로그아웃')">
+        <div class="set-menu-icon" style="background:var(--red-light)">🚪</div>
+        <div class="set-menu-info"><div class="set-menu-label" style="color:var(--red)">로그아웃</div></div>
+        <div class="set-menu-arrow" style="color:var(--red)">›</div>
       </div>
     </div>
-
-    <button class="btn btn-outline" onclick="alert('로그아웃')" style="margin-top:4px;color:var(--red);border-color:var(--red)">로그아웃</button>
     <div class="disclaimer" style="margin-top:10px">🔒 실명은 절대 공유되지 않아요. 익명 이름으로만 활동해요.</div>
   </div>
 </div>
@@ -977,7 +1063,7 @@ body{background:var(--bg);font-family:'Noto Sans KR',sans-serif;color:var(--text
   <div class="ni" onclick="goTab('s-together')" id="nav-together"><div class="ni-icon">🌲</div><div class="ni-label">Together</div></div>
   <div class="ni" onclick="goTab('s-record')" id="nav-record"><div class="ni-plus">+</div><div class="ni-label" style="font-size:9px;color:var(--muted)">기록</div></div>
   <div class="ni" onclick="goTab('s-challenge')" id="nav-challenge"><div class="ni-icon">🌱</div><div class="ni-label">챌린지</div></div>
-  <div class="ni" onclick="goTab('s-setting')" id="nav-setting"><div class="ni-icon">☀️</div><div class="ni-label">설정</div></div>
+  <div class="ni" onclick="goTab('s-setting')" id="nav-setting"><div class="ni-icon">👤</div><div class="ni-label">MY</div></div>
 </div>
 </div><!-- end mainApp -->
 
@@ -1326,19 +1412,120 @@ const DB=[
   {k:'g043',n:'5-HTP 100mg',b:'NOW Foods',e:'🧠',t:'gl'},
   {k:'g044',n:'L-Theanine 200mg',b:'NOW Foods',e:'🍵',t:'gl'},
   {k:'g045',n:'Glucosamine + Chondroitin',b:'NOW Foods',e:'🦴',t:'gl'},
+  {k:'g046',n:'Magnesium Glycinate 400mg',b:'Solgar',e:'💎',t:'gl'},
+  {k:'g047',n:'Omega-3 Wild Fish Oil',b:'Solgar',e:'🐟',t:'gl'},
+  {k:'g048',n:'Vitamin D3 2000 IU',b:'Solgar',e:'☀️',t:'gl'},
+  {k:'g049',n:'Calcium Citrate 315mg',b:'Solgar',e:'🦴',t:'gl'},
+  {k:'g050',n:'B-Complex 100',b:'Solgar',e:'⚡',t:'gl'},
+  {k:'g051',n:'Folate 400mcg',b:'Solgar',e:'🌿',t:'gl'},
+  {k:'g052',n:'Zinc Picolinate 22mg',b:'Solgar',e:'✨',t:'gl'},
+  {k:'g053',n:'Basic Nutrients 2/Day',b:'Thorne',e:'🌟',t:'gl'},
+  {k:'g054',n:'Vitamin D/K2 Liquid',b:'Thorne',e:'☀️',t:'gl'},
+  {k:'g055',n:'Iron Bisglycinate',b:'Thorne',e:'🔴',t:'gl'},
+  {k:'g056',n:'Magnesium Bisglycinate',b:'Thorne',e:'💎',t:'gl'},
+  {k:'g057',n:'NAC 500mg',b:'Thorne',e:'🛡️',t:'gl'},
+  {k:'g058',n:'Berberine 500mg',b:'Thorne',e:'🌿',t:'gl'},
+  {k:'g059',n:'Omega-3 Fish Oil 1000mg',b:'Life Extension',e:'🐟',t:'gl'},
+  {k:'g060',n:'Super Omega-3',b:'Life Extension',e:'🐟',t:'gl'},
+  {k:'g061',n:'Vitamin D3 5000 IU',b:'Life Extension',e:'☀️',t:'gl'},
+  {k:'g062',n:'NAC 600mg',b:'Life Extension',e:'🛡️',t:'gl'},
+  {k:'g063',n:'Magnesium Caps 500mg',b:'Life Extension',e:'💎',t:'gl'},
+  {k:'g064',n:'Two-Per-Day Multivitamin',b:'Life Extension',e:'🌟',t:'gl'},
+  {k:'g065',n:'Omega-3 Fish Oil 1250mg',b:'Sports Research',e:'🐟',t:'gl'},
+  {k:'g066',n:'Vitamin D3 K2 5000 IU',b:'Sports Research',e:'☀️',t:'gl'},
+  {k:'g067',n:'Collagen Peptides Powder',b:'Sports Research',e:'💅',t:'gl'},
+  {k:'g068',n:'Biotin 5000mcg',b:'Sports Research',e:'💆',t:'gl'},
+  {k:'g069',n:'CLA 1250mg',b:'Sports Research',e:'🔥',t:'gl'},
+  {k:'g070',n:'Omega-3 Fish Oil 1200mg',b:'California Gold Nutrition',e:'🐟',t:'gl'},
+  {k:'g071',n:'Vitamin D3 2000 IU',b:'California Gold Nutrition',e:'☀️',t:'gl'},
+  {k:'g072',n:'Vitamin C 1000mg',b:'California Gold Nutrition',e:'🍊',t:'gl'},
+  {k:'g073',n:'Collagen UP Peptides',b:'California Gold Nutrition',e:'💅',t:'gl'},
+  {k:'g074',n:'Probiotic 30 Billion',b:'California Gold Nutrition',e:'🦠',t:'gl'},
+  {k:'g075',n:'Inositol Powder',b:'Jarrow Formulas',e:'💜',t:'gl'},
+  {k:'g076',n:'Methyl Folate 400mcg',b:'Jarrow Formulas',e:'🌿',t:'gl'},
+  {k:'g077',n:'Ubiquinol CoQ10 100mg',b:'Jarrow Formulas',e:'❤️',t:'gl'},
+  {k:'g078',n:'Whey Protein Isolate',b:'Jarrow Formulas',e:'💪',t:'gl'},
+  {k:'g079',n:'Saccharomyces Boulardii',b:'Jarrow Formulas',e:'🦠',t:'gl'},
+  {k:'g080',n:'Prenatal DHA 200mg',b:'Nordic Naturals',e:'🤰',t:'gl'},
+  {k:'g081',n:'Ultimate Omega 2X',b:'Nordic Naturals',e:'🐟',t:'gl'},
+  {k:'g082',n:'Vitamin D3 Gummies',b:'Nordic Naturals',e:'☀️',t:'gl'},
+  {k:'g083',n:'Probiotic 10 25 Billion',b:'Garden of Life',e:'🦠',t:'gl'},
+  {k:'g084',n:'Vitamin Code Raw Iron',b:'Garden of Life',e:'🔴',t:'gl'},
+  {k:'g085',n:'mykind Organics Prenatal',b:'Garden of Life',e:'🤰',t:'gl'},
 ];
 
 // ONBOARDING
-function selGender(el,val){document.querySelectorAll('.g-btn').forEach(b=>b.classList.remove('sel'));el.classList.add('sel');gSel=val;}
-function toggleTag(el){el.classList.toggle('sel')}
+function selGender(el,val){
+  document.querySelectorAll('.g-btn').forEach(b=>b.classList.remove('sel'));
+  el.classList.add('sel');gSel=val;
+  // 여성만: 임신/수유 + 여성질환 표시
+  document.getElementById('preg-section').style.display=val==='여성'?'block':'none';
+  document.getElementById('cond-female').style.display=val==='여성'?'block':'none';
+}
+function toggleTag(el){el.classList.toggle('sel');
+  // 알레르기 기타
+  if(el.textContent==='기타'&&el.closest('#allergy-tags')){
+    const inp=document.getElementById('ob-allergy-etc');
+    if(inp)inp.style.display=el.classList.contains('sel')?'block':'none';
+  }
+  // 관심사 기타
+  if(el.textContent==='기타'&&el.closest('#interest-tags')){
+    const inp=document.getElementById('ob-interest-etc');
+    if(inp)inp.style.display=el.classList.contains('sel')?'block':'none';
+  }
+}
+function toggleInterest(el){
+  const tags=document.querySelectorAll('#interest-tags .sel');
+  if(!el.classList.contains('sel')&&tags.length>=5){
+    // shake effect
+    el.style.border='1.5px solid #E05252';
+    setTimeout(()=>el.style.border='',800);
+    return;
+  }
+  el.classList.toggle('sel');
+  if(el.textContent==='기타'){
+    const inp=document.getElementById('ob-interest-etc');
+    if(inp)inp.style.display=el.classList.contains('sel')?'block':'none';
+  }
+  const cnt=document.querySelectorAll('#interest-tags .sel').length;
+  const lbl=document.getElementById('interest-count-lbl');
+  if(lbl)lbl.textContent=cnt+' / 5 선택됨';
+}
 function goStep(n){
-  if(n===2){userData.name=document.getElementById('ob-name').value.trim()||'친구';userData.birth=document.getElementById('ob-birth').value.trim();userData.gender=gSel;userData.height=document.getElementById('ob-h').value;userData.weight=document.getElementById('ob-w').value;userData.pregnancy=[...document.querySelectorAll('#preg-tags .sel')].map(b=>b.textContent);}
-  if(n===3){userData.allergies=[...document.querySelectorAll('#allergy-tags .sel')].map(b=>b.textContent);userData.meds=document.getElementById('ob-meds').value.trim();userData.conditions=[...document.querySelectorAll('#cond-tags .sel')].map(b=>b.textContent);}
-  if(n===4){userData.interests=[...document.querySelectorAll('#interest-tags .sel')].map(b=>b.textContent.replace(/^.\s/,''));}
+  if(n===2){
+    userData.name=document.getElementById('ob-name').value.trim()||'친구';
+    userData.birth=document.getElementById('ob-birth').value.trim();
+    userData.gender=gSel;
+    userData.height=document.getElementById('ob-h').value;
+    userData.weight=document.getElementById('ob-w').value;
+    userData.goalWeight=document.getElementById('ob-goal-w').value;
+    userData.goalKcal=document.getElementById('ob-goal-kcal').value;
+    userData.pregnancy=[...document.querySelectorAll('#preg-tags .sel')].map(b=>b.textContent);
+  }
+  if(n===3){
+    userData.allergies=[...document.querySelectorAll('#allergy-tags .sel')].map(b=>b.textContent);
+    const allergyEtc=document.getElementById('ob-allergy-etc').value.trim();
+    if(allergyEtc)userData.allergies.push(allergyEtc);
+    userData.meds=document.getElementById('ob-meds').value.trim();
+    userData.conditions=[...document.querySelectorAll('#cond-tags .sel, #cond-female .sel')].map(b=>b.textContent);
+  }
+  if(n===4){
+    userData.interests=[...document.querySelectorAll('#interest-tags .sel')].map(b=>b.textContent.replace(/^.\s/,''));
+    const intEtc=document.getElementById('ob-interest-etc').value.trim();
+    if(intEtc)userData.interests.push(intEtc);
+  }
+  if(n===5){
+    // save pill data
+  }
   document.querySelectorAll('.ob-step').forEach(s=>s.classList.remove('active'));
   document.getElementById('os'+n).classList.add('active');
   document.querySelectorAll('.prog-d').forEach((d,i)=>{d.classList.remove('active','done');if(i<n-1)d.classList.add('done');if(i===n-1)d.classList.add('active');});
-  if(n===5)setTimeout(()=>{try{localStorage.setItem('wy_user',JSON.stringify(userData));localStorage.setItem('wy_pills',JSON.stringify(pills));}catch(e){}document.getElementById('onboard').style.display='none';document.getElementById('mainApp').style.display='block';initDashboard();},2000);
+}
+function finishOnboard(){
+  try{localStorage.setItem('wy_user',JSON.stringify(userData));localStorage.setItem('wy_pills',JSON.stringify(pills));}catch(e){}
+  document.getElementById('onboard').style.display='none';
+  document.getElementById('mainApp').style.display='block';
+  initDashboard();
 }
 
 // INIT
@@ -1364,8 +1551,18 @@ function searchPill(val,ddId){
   const q=val.toLowerCase();
   const matches=DB.filter(s=>s.n.toLowerCase().includes(q)||s.b.toLowerCase().includes(q)).slice(0,7);
   const enc=encodeURIComponent(val);
-  let html=matches.map(s=>`<div class="sdd-item" onclick="addPill('${s.k}','${ddId}')"><div class="sdd-name">${s.e} ${hl(s.n,val)}</div><div class="sdd-sub"><span>${s.b}</span><span style="font-size:9px;padding:1px 5px;border-radius:4px;${s.t==='kr'?'background:#FEF3F8;color:#FF6B9D':'background:#EAF4EE;color:#3D8B5E'}">${s.t==='kr'?'🇰🇷':'🌍'}</span></div></div>`).join('');
-  html+=`<div style="padding:6px 10px;font-size:10px;color:var(--muted)">목록에 없으면 직접 검색:</div><div class="sdd-ext"><a class="ext-btn ext-naver" href="https://search.shopping.naver.com/search/all?query=${enc}" target="_blank">🟢 네이버</a><a class="ext-btn ext-coupang" href="https://www.coupang.com/np/search?q=${enc}" target="_blank">🔴 쿠팡</a><a class="ext-btn ext-iherb" href="https://www.iherb.com/search#query=${enc}" target="_blank">🌿 아이허브</a></div>`;
+  let html='';
+  if(matches.length){
+    html+=matches.map(s=>`<div class="sdd-item" onclick="addPill('${s.k}','${ddId}')"><div class="sdd-name">${s.e} ${hl(s.n,val)}</div><div class="sdd-sub"><span>${s.b}</span><span style="font-size:9px;padding:1px 5px;border-radius:4px;${s.t==='kr'?'background:#FEF3F8;color:#FF6B9D':'background:#EAF4EE;color:#3D8B5E'}">${s.t==='kr'?'🇰🇷':'🌍'}</span></div></div>`).join('');
+  } else {
+    html+=`<div style="padding:10px 14px;font-size:12px;color:var(--muted)">검색 결과가 없어요 — 아래에서 직접 찾아보세요</div>`;
+  }
+  html+=`<div style="padding:6px 10px 4px;font-size:10px;font-weight:700;color:var(--mid);border-top:1px solid var(--bg)">🔍 직접 검색하기</div>
+  <div class="sdd-ext">
+    <a class="ext-btn ext-naver" href="https://search.shopping.naver.com/search/all?query=${enc}" target="_blank">🟢 네이버</a>
+    <a class="ext-btn ext-coupang" href="https://www.coupang.com/np/search?q=${enc}" target="_blank">🔴 쿠팡</a>
+    <a class="ext-btn ext-iherb" href="https://www.iherb.com/search#query=${enc}" target="_blank">🌿 아이허브</a>
+  </div>`;
   dd.innerHTML=html;dd.classList.add('show');
 }
 function hl(t,q){const i=t.toLowerCase().indexOf(q.toLowerCase());if(i<0)return t;return t.slice(0,i)+'<strong style="color:var(--green)">'+t.slice(i,i+q.length)+'</strong>'+t.slice(i+q.length);}
@@ -1685,6 +1882,129 @@ setTimeout(renderCal,50);
       <div class="hospital-preview">PCOS로 오랫동안 고민했는데 이 선생님 만나고 많이 안정됐어요...</div>
     </div>
     <button class="btn btn-green" onclick="alert('꽃 레벨 달성 방법 안내 준비 중!')" style="margin-top:8px">🌸 꽃 레벨 되는 방법 보기</button>
+  </div>
+</div>
+
+<!-- ACCOUNT DETAIL -->
+<div class="detail-page" id="acct-detail">
+  <div style="background:#fff">
+    <div class="detail-back" onclick="closeDetail('acct-detail')">
+      <div class="detail-back-icon">←</div>
+      <div class="detail-back-label">계정 & 앱 설정</div>
+    </div>
+  </div>
+  <div class="body">
+    <div class="set-section">
+      <div class="set-menu-item">
+        <div class="set-menu-icon" style="background:var(--bg)">🔒</div>
+        <div class="set-menu-info"><div class="set-menu-label">개인정보 및 보안</div></div>
+        <div class="set-menu-arrow">›</div>
+      </div>
+      <div class="set-menu-item">
+        <div class="set-menu-icon" style="background:var(--bg)">🙈</div>
+        <div class="set-menu-info">
+          <div class="set-menu-label">익명 이름 변경</div>
+          <div class="set-menu-sub">현재: 라벤더 🌸</div>
+        </div>
+        <div class="set-menu-arrow">›</div>
+      </div>
+      <div class="set-menu-item">
+        <div class="set-menu-icon" style="background:var(--bg)">📢</div>
+        <div class="set-menu-info"><div class="set-menu-label">공지사항</div></div>
+        <div class="set-menu-arrow">›</div>
+      </div>
+      <div class="set-menu-item">
+        <div class="set-menu-icon" style="background:var(--bg)">💌</div>
+        <div class="set-menu-info">
+          <div class="set-menu-label">의견 보내기</div>
+          <div class="set-menu-sub">앱 개선 아이디어를 알려주세요</div>
+        </div>
+        <div class="set-menu-arrow">›</div>
+      </div>
+      <div class="set-menu-item">
+        <div class="set-menu-icon" style="background:var(--bg)">📋</div>
+        <div class="set-menu-info"><div class="set-menu-label">이용약관</div></div>
+        <div class="set-menu-arrow">›</div>
+      </div>
+      <div class="set-menu-item">
+        <div class="set-menu-icon" style="background:var(--bg)">ℹ️</div>
+        <div class="set-menu-info"><div class="set-menu-label">앱 버전</div></div>
+        <div class="set-menu-right"><div class="set-menu-val">v1.0.0 (MVP)</div></div>
+      </div>
+    </div>
+    <button class="btn btn-outline" onclick="alert('로그아웃')" style="margin-top:8px;color:var(--red);border-color:var(--red)">로그아웃</button>
+    <button class="btn btn-outline" onclick="alert('계정 삭제')" style="margin-top:8px;color:var(--muted)">계정 삭제</button>
+  </div>
+</div>
+
+<!-- CHALLENGE DETAIL -->
+<div class="detail-page" id="chal-detail">
+  <div style="background:#fff">
+    <div class="detail-back" onclick="closeDetail('chal-detail')">
+      <div class="detail-back-icon">←</div>
+      <div class="detail-back-label">챌린지 상세</div>
+    </div>
+  </div>
+  <div style="background:linear-gradient(135deg,#1a4a2e 0%,#3D8B5E 100%);padding:20px 18px;color:#fff">
+    <div style="font-size:36px;margin-bottom:8px">⚖️</div>
+    <div style="font-size:20px;font-weight:700;margin-bottom:4px">30일 체중 기록</div>
+    <div style="font-size:13px;opacity:.75;margin-bottom:14px">매일 체중을 기록하면 달성!</div>
+    <div style="background:rgba(255,255,255,.15);border-radius:12px;padding:12px 14px;display:flex;align-items:center;gap:12px">
+      <div style="text-align:center;flex:1"><div style="font-size:22px;font-weight:700">14</div><div style="font-size:10px;opacity:.75">달성일</div></div>
+      <div style="width:1px;height:32px;background:rgba(255,255,255,.3)"></div>
+      <div style="text-align:center;flex:1"><div style="font-size:22px;font-weight:700">30</div><div style="font-size:10px;opacity:.75">목표일</div></div>
+      <div style="width:1px;height:32px;background:rgba(255,255,255,.3)"></div>
+      <div style="text-align:center;flex:1"><div style="font-size:22px;font-weight:700">47%</div><div style="font-size:10px;opacity:.75">달성률</div></div>
+    </div>
+  </div>
+  <div class="body">
+    <div style="background:#fff;border:1.5px solid var(--border);border-radius:14px;padding:14px;margin-bottom:10px">
+      <div style="margin-bottom:10px">
+        <div style="display:flex;justify-content:space-between;margin-bottom:6px">
+          <div style="font-size:13px;font-weight:600">진행률</div>
+          <div style="font-size:13px;font-weight:700;color:var(--green)">47%</div>
+        </div>
+        <div class="chal-prog-bar" style="height:10px"><div class="chal-prog-fill" style="width:47%"></div></div>
+      </div>
+      <div style="font-size:12px;color:var(--muted)">🎁 완료 시 +150P 획득</div>
+    </div>
+
+    <div class="slabel">이번 달 기록</div>
+    <div style="display:grid;grid-template-columns:repeat(7,1fr);gap:4px;margin-bottom:14px">
+      <div style="text-align:center;font-size:9px;color:var(--muted);padding:2px">월</div>
+      <div style="text-align:center;font-size:9px;color:var(--muted);padding:2px">화</div>
+      <div style="text-align:center;font-size:9px;color:var(--muted);padding:2px">수</div>
+      <div style="text-align:center;font-size:9px;color:var(--muted);padding:2px">목</div>
+      <div style="text-align:center;font-size:9px;color:var(--muted);padding:2px">금</div>
+      <div style="text-align:center;font-size:9px;color:var(--muted);padding:2px">토</div>
+      <div style="text-align:center;font-size:9px;color:var(--muted);padding:2px">일</div>
+      <div></div><div></div><div></div>
+      <div style="text-align:center"><div style="width:28px;height:28px;border-radius:50%;background:var(--green);color:#fff;font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center;margin:0 auto">1</div></div>
+      <div style="text-align:center"><div style="width:28px;height:28px;border-radius:50%;background:var(--green);color:#fff;font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center;margin:0 auto">2</div></div>
+      <div style="text-align:center"><div style="width:28px;height:28px;border-radius:50%;background:var(--green);color:#fff;font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center;margin:0 auto">3</div></div>
+      <div style="text-align:center"><div style="width:28px;height:28px;border-radius:50%;background:var(--green);color:#fff;font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center;margin:0 auto">4</div></div>
+      <div style="text-align:center"><div style="width:28px;height:28px;border-radius:50%;background:var(--green);color:#fff;font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center;margin:0 auto">5</div></div>
+      <div style="text-align:center"><div style="width:28px;height:28px;border-radius:50%;background:var(--green-light);color:var(--green);font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center;margin:0 auto">6</div></div>
+      <div style="text-align:center"><div style="width:28px;height:28px;border-radius:50%;background:var(--green);color:#fff;font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center;margin:0 auto">7</div></div>
+      <div style="text-align:center"><div style="width:28px;height:28px;border-radius:50%;background:var(--green);color:#fff;font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center;margin:0 auto">8</div></div>
+      <div style="text-align:center"><div style="width:28px;height:28px;border-radius:50%;background:var(--green);color:#fff;font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center;margin:0 auto">9</div></div>
+      <div style="text-align:center"><div style="width:28px;height:28px;border-radius:50%;background:var(--green);color:#fff;font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center;margin:0 auto">10</div></div>
+      <div style="text-align:center"><div style="width:28px;height:28px;border-radius:50%;background:var(--green);color:#fff;font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center;margin:0 auto">11</div></div>
+      <div style="text-align:center"><div style="width:28px;height:28px;border-radius:50%;background:var(--green);color:#fff;font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center;margin:0 auto">12</div></div>
+      <div style="text-align:center"><div style="width:28px;height:28px;border-radius:50%;background:var(--green);color:#fff;font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center;margin:0 auto">13</div></div>
+      <div style="text-align:center"><div style="width:28px;height:28px;border-radius:50%;background:var(--green);color:#fff;font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center;margin:0 auto">14</div></div>
+      <div style="text-align:center"><div style="width:28px;height:28px;border-radius:50%;background:var(--border);color:var(--muted);font-size:11px;display:flex;align-items:center;justify-content:center;margin:0 auto">15</div></div>
+    </div>
+
+    <div class="slabel">같이 할 벗 찾기</div>
+    <div style="background:#fff;border:1.5px dashed var(--green);border-radius:14px;padding:16px;text-align:center;margin-bottom:10px">
+      <div style="font-size:28px;margin-bottom:8px">🌸</div>
+      <div style="font-size:14px;font-weight:700;margin-bottom:4px">듀오 챌린지</div>
+      <div style="font-size:12px;color:var(--muted);margin-bottom:12px;line-height:1.6">친구와 함께 챌린지를 하면<br>더 오래 유지돼요!</div>
+      <div style="font-size:11px;background:var(--flower-light);color:var(--flower);padding:4px 10px;border-radius:10px;display:inline-block;margin-bottom:12px">🌸 꽃 레벨부터 가능</div>
+      <button class="btn btn-green" style="padding:10px" onclick="alert('꽃 레벨 달성 후 이용 가능해요!')">벗 초대하기</button>
+    </div>
+    <button class="btn btn-green" onclick="alert('오늘 체중 기록하러 가기!');closeDetail('chal-detail');goTab('s-record')">오늘 기록하기 →</button>
   </div>
 </div>
 </body>
